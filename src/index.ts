@@ -13,8 +13,8 @@ export let pages: Page[] = []
 
 async function parsergunlaunch() {
     const browser = await puppeteer.launch({
-        headless: 'shell',
-        args: ['--enable-gpu'],
+        headless: false,
+        // args: ['--enable-gpu'],
     });
     const page = await browser.newPage()
     await page.setViewport({ width: 720, height: 1280, isMobile:true })
