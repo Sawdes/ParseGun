@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/src/index.js",
     "build": "npx tsc",
-    "dev": "nodemon dist/index.js",
-    "prod": "node dist/index.js"
+    "dev": "nodemon dist/src/index.js",
+    "prod": "node dist/src/index.js"
   },
   "author": "Sawdes",
   "license": "ISC",
@@ -23,11 +23,12 @@
   },
   "dependencies": {
     "input": "^1.0.1",
-    "puppeteer": "^22.7.1",
+    "mongodb": "^6.6.2",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-adblocker": "^2.13.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "telegram": "^2.20.15",
+    "winston": "^3.13.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz"
   }
 }
