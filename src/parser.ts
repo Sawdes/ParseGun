@@ -2,31 +2,30 @@ import puppeteer from 'puppeteer';
 import { Page } from 'puppeteer'
 import fs from 'fs';
 import { logger } from './logger';
+import config from './../.temp/config.json'
+import { Browser } from 'puppeteer';
 
 export class Parser {
-    static browser: any;
-    
+    static browser: Browser;
+
     static async init() {
         Parser.browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
         });
     }
 
     static async getPage() {
         const page = await Parser.browser.newPage()
         page.setDefaultTimeout(14000)
-        // await page.setViewport({ width: 1920, height: 1080})
+        await page.setViewport({ width: 1920, height: 1080})
     
         const cookiesString = fs.readFileSync('./.temp/cookies1.json', {'encoding': 'utf-8'})
         const cookies = JSON.parse(cookiesString)
         await page.setCookie(...cookies)
     
-        // let userAgent = config.userAgent
-        // await page.setUserAgent(userAgent);
+        await page.setUserAgent(config.userAgent);
         
         // await page.emulate(KnownDevices['iPhone 6'])
-    
-        await page.reload({waitUntil: 'domcontentloaded'})
         return page
     }
 
@@ -65,20 +64,20 @@ export class Parser {
         logger.info('Parse ozon product...')
         const page = await Parser.getPage()
         logger.info('Go to page...')
-        await page.goto(link, {waitUntil: 'networkidle2', timeout: 0})
-
+        await page.goto(link, {waitUntil: 'networkidle2'})
+        await page.screenshot({path: './screenshot.png'})
         // Parse article
         logger.info('Parse article...')
         const articleElementSelectors = [
             'button[data-widget="webDetailSKU"] > div',
         ]
         let articleElement = await Parser.parseElementOfSelectors(page, articleElementSelectors)
-        let article = await page.evaluate((el: { textContent: string; }) => parseFloat(String(el?.textContent?.trim().replace(/^\D+/g, ''))), articleElement)
+        let article = await page.evaluate((el) => parseFloat(String(el?.textContent?.trim().replace(/^\D+/g, ''))), articleElement)
 
         // Parse name
         logger.info('Parse name...')
         let nameProductElement = await page.waitForSelector('#layoutPage > div.b2 > div.container.b6 > div.ln3_27.l8n_27 > div.ln3_27.l9n_27.ln8_27 > div.d8 > div > div > div.nm3_27 > h1')
-        let nameProduct = await page.evaluate((el: { textContent: string; }) => String(el?.textContent?.trim()), nameProductElement)
+        let nameProduct = await page.evaluate((el) => String(el?.textContent?.trim()), nameProductElement)
 
 
         // Parse price
@@ -88,7 +87,7 @@ export class Parser {
             'div[data-widget=webPrice] > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > span'
         ]
         let priceElement = await Parser.parseElementOfSelectors(page, priceElementSelectors)
-        let price = await page.evaluate((el: { textContent: string; }) => parseInt(String(el?.textContent?.trim().replace(/[^0-9\.-]+/g,""))), priceElement)
+        let price = await page.evaluate((el) => parseInt(String(el?.textContent?.trim().replace(/[^0-9\.-]+/g,""))), priceElement)
 
         // Return parsed info
         logger.info({article, link, nameProduct, price})
