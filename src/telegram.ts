@@ -6,7 +6,6 @@ import { logger } from "./logger";
 import { User } from "./user";
 import { Mongo } from './db';
 import { OzonProduct } from "./product";
-import { ObjectId } from "mongodb";
 import { isOzonURL, isValidURL } from "./helpers";
 
 const stringSession = config.stringSession
@@ -42,15 +41,7 @@ export class TelegramBot {
   }
 
   static async ozonProductHandler(url: any) {
-    const getProductDB = async () => await Mongo.ozonProducts.findOne({url: url})
-    if(await getProductDB() == null) {
-      logger.info('New product! Init...')
-      await OzonProduct.init(url)
-      return await getProductDB()
-    } else {
-      logger.info('Product already exist.')
-      return await getProductDB()
-    }
+    return await OzonProduct.init(url)
   }
 
   static async reqHandler(req: {user: any, message: any}) {
@@ -89,7 +80,7 @@ export class TelegramBot {
         await TelegramBot.client.sendMessage(req.user.TelegramId, {message: `Your profile: ${JSON.stringify(req.user, null, 4)}`})
         break;
       case '/show_pinned_products':
-        if(req.user.pinnedOzonProducts == null) {
+        if(req.user.pinnedOzonProducts.length == 0) {
           await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌Not a single product attached.'})
           break;
         }
@@ -98,18 +89,20 @@ export class TelegramBot {
         }
         break;
       case '/pin_ozon_product':
-        await TelegramBot.client.sendMessage(req.user.TelegramId, {message: 'Go to https://www.ozon.ru/ and send me link.'})
-        Mongo.users.updateOne(
-          {TelegramId: req.user.TelegramId},
-          {
-            $set: {
-                context: 'pinOzonProduct'
-              }
-          }
-        )
+        if (req.user.pinnedOzonProducts.length >= 5) {
+          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌Max pinned products = 5'});
+          return
+        } else {
+          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: 'Go to https://www.ozon.ru/ and send me link.'})
+          await Mongo.setContextForUser(req, "pinOzonProduct")
+        }
         break;
       case '/pinned_products':
         await TelegramBot.client.sendMessage(req.user.TelegramId, {message: `Your profile: ${JSON.stringify(req.user.pinnedProducts, null, 4)}`})
+        break;
+      case '/remove_all_products':
+        Mongo.removeAllProductForUser(req);
+        await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '✅Successfully remove all products.'});
         break;
       default:
         await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌Unknown command. Please, use MENU button.'});
@@ -120,59 +113,29 @@ export class TelegramBot {
   static async contextHandler(req: {user: any, message: any}) {
     switch (req.user.context) {
       case 'pinOzonProduct':
-        if(!isValidURL(req.message)) {
+        await Mongo.setContextForUser(req, 'pinningProduct')
+        await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '⌛️'});
+        if (!isValidURL(req.message)) {
           await TelegramBot.client.sendMessage(req.user.TelegramId, {message: 'Invalid URl.'});
-          await Mongo.users.updateOne(
-            {TelegramId: req.user.TelegramId},
-            {
-              $set: {
-                  "context": null,
-              },
-            }
-          );
+          await Mongo.setContextForUser(req, null)
           return
         } else if (!isOzonURL(req.message)) {
           await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌Is not OZON.'});
-          await Mongo.users.updateOne(
-            {TelegramId: req.user.TelegramId},
-            {
-              $set: {
-                  "context": null,
-              },
-            }
-          );
+          await Mongo.setContextForUser(req, null)
           return
         }
-        await Mongo.users.updateOne(
-          {TelegramId: req.user.TelegramId},
-          {
-            $set: {
-                "context": 'pinnigProduct',
-            },
-          }
-        );
-        await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '⌛️'});
         const product:any = await TelegramBot.ozonProductHandler(req.message)
-        await Mongo.users.updateOne(
-          {TelegramId: req.user.TelegramId},
-          {
-            $push: {
-              "pinnedOzonProducts": new ObjectId(product._id) as any
-            }
-          }
-        );
-        await Mongo.users.updateOne(
-          {TelegramId: req.user.TelegramId},
-          {
-            $set: {
-                "context": null,
-            },
-          }
-        );
-        await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '✅Successfully pin product!'});
-        await TelegramBot.client.sendMessage(req.user.TelegramId, {message: await OzonProduct.getStringProductTelegram(product)});
+        if(await Mongo.getIdPinnedProductForUser(req, product._id) == null) {
+          await Mongo.addPinnedOzonProduct(req, product)
+          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '✅Successfully pin product!'});
+          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: await OzonProduct.getStringProductTelegram(product)});
+        } else {
+          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌Product already pinned!'});
+          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: await OzonProduct.getStringProductTelegram(product)});
+        }
+        await Mongo.setContextForUser(req, null)
         break;
-      case 'pinnigProduct':
+      case 'pinningProduct':
         await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌WAIT and fuck off, baby!'});
         break;
       default:

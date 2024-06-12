@@ -1,6 +1,7 @@
-import { Collection, Document, MongoClient, ServerApiVersion } from "mongodb";
+import { Collection, Document, MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 import config from "../.temp/config.json"
 import { logger } from "./logger";
+import { OzonProduct } from "./product";
 // import { generateRandomInt } from "./helpers";
 
 export class Mongo {
@@ -40,6 +41,59 @@ export class Mongo {
       logger.error(error)
       await Mongo.client.close();
     }
+  }
+
+  static async setContextForUser(req: { user: { TelegramId: number; }}, context: string | null) {
+    await Mongo.users.updateOne(
+      {TelegramId: req.user.TelegramId},
+      {
+        $set: {
+            "context": context,
+        },
+      }
+    );
+  }
+
+  static async addPinnedOzonProduct(req: { user: { TelegramId: number; } }, product: any) {
+    await Mongo.users.updateOne(
+      {TelegramId: req.user.TelegramId},
+      {
+        $push: {
+          "pinnedOzonProducts": new ObjectId(product._id) as any
+        }
+      }
+    );
+  }
+
+  static async getPinnedProductArticle(article: number) {
+    return await Mongo.users.findOne(
+      {"article": article},
+    );
+  }
+
+  static async getIdPinnedProductForUser(req: { user: { TelegramId: number; } }, id: ObjectId) {
+    const user: any = await Mongo.users.findOne(
+      {"TelegramId": req.user.TelegramId},
+    );
+    for(let i = 0; i < user.pinnedOzonProducts.length; i++) {
+      logger.info(`${user.pinnedOzonProducts[i]} ? ${id}`)
+      if(String(id) == user.pinnedOzonProducts[i]) {
+        logger.info(`productBBB: ${user.pinnedOzonProducts[i]}`)
+        return user.pinnedOzonProducts[i]
+      }
+    }
+    return null
+  }
+
+  static async removeAllProductForUser(req: { user: { TelegramId: number; }}) {
+    await Mongo.users.updateOne(
+      {TelegramId: req.user.TelegramId},
+      {
+        $set: {
+            "pinnedOzonProducts": [],
+        },
+      }
+    );
   }
 
 

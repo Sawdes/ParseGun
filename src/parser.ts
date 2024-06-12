@@ -4,14 +4,16 @@ import fs from 'fs';
 import { logger } from './logger';
 
 export class Parser {
-    static pages: Page[] = []
-
+    static browser: any;
+    
     static async init() {
-        const browser = await puppeteer.launch({
+        Parser.browser = await puppeteer.launch({
             headless: false,
         });
-        
-        const page = await browser.newPage()
+    }
+
+    static async getPage() {
+        const page = await Parser.browser.newPage()
         page.setDefaultTimeout(14000)
         // await page.setViewport({ width: 1920, height: 1080})
     
@@ -25,7 +27,7 @@ export class Parser {
         // await page.emulate(KnownDevices['iPhone 6'])
     
         await page.reload({waitUntil: 'domcontentloaded'})
-        Parser.pages.push(page)
+        return page
     }
 
     // static async parse(page: Page, link: string) {
@@ -53,7 +55,7 @@ export class Parser {
         });
         await page.waitForNavigation();
         page.reload({waitUntil: 'networkidle2'})
-    
+
         console.info('init cookies...')
         const cookies = await page.cookies();
         fs.writeFileSync('./temp/cookies1.json', JSON.stringify(cookies, null, 2));
@@ -61,7 +63,7 @@ export class Parser {
 
     static async parseOzonProduct(link: string) {
         logger.info('Parse ozon product...')
-        const page = Parser.pages[0]
+        const page = await Parser.getPage()
         logger.info('Go to page...')
         await page.goto(link, {waitUntil: 'networkidle2', timeout: 0})
 
@@ -71,12 +73,12 @@ export class Parser {
             'button[data-widget="webDetailSKU"] > div',
         ]
         let articleElement = await Parser.parseElementOfSelectors(page, articleElementSelectors)
-        let article = await page.evaluate(el => parseFloat(String(el?.textContent?.trim().replace(/^\D+/g, ''))), articleElement)
+        let article = await page.evaluate((el: { textContent: string; }) => parseFloat(String(el?.textContent?.trim().replace(/^\D+/g, ''))), articleElement)
 
         // Parse name
         logger.info('Parse name...')
         let nameProductElement = await page.waitForSelector('#layoutPage > div.b2 > div.container.b6 > div.ln3_27.l8n_27 > div.ln3_27.l9n_27.ln8_27 > div.d8 > div > div > div.nm3_27 > h1')
-        let nameProduct = await page.evaluate(el => String(el?.textContent?.trim()), nameProductElement)
+        let nameProduct = await page.evaluate((el: { textContent: string; }) => String(el?.textContent?.trim()), nameProductElement)
 
 
         // Parse price
@@ -86,10 +88,11 @@ export class Parser {
             'div[data-widget=webPrice] > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > span'
         ]
         let priceElement = await Parser.parseElementOfSelectors(page, priceElementSelectors)
-        let price = await page.evaluate(el => parseInt(String(el?.textContent?.trim().replace(/[^0-9\.-]+/g,""))), priceElement)
+        let price = await page.evaluate((el: { textContent: string; }) => parseInt(String(el?.textContent?.trim().replace(/[^0-9\.-]+/g,""))), priceElement)
 
         // Return parsed info
         logger.info({article, link, nameProduct, price})
+        page.close()
         return {article, link, nameProduct, price}
     }
 
@@ -137,7 +140,6 @@ export class Parser {
             if(element !== null) {
                 break;
             }
-            i++
         }
         return element
     }

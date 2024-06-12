@@ -18,8 +18,24 @@ export class OzonProduct {
     static async init(link: string) {
         logger.info("initOzonProduct...")
         const {article, nameProduct, price } = await Parser.parseOzonProduct(link)
-        await Mongo.ozonProducts.insertOne({article, url:link, nameProduct, lastPrice: price})
-        return new OzonProduct(article, link, nameProduct, price)
+        const getProductDB = async () => await Mongo.ozonProducts.findOne({"article": article})
+        if(await getProductDB() == null) {
+            logger.info('New product! Add in db...')
+            await Mongo.ozonProducts.insertOne({article, url:link, nameProduct, lastPrice: price})
+            return await getProductDB()
+        } else {
+            logger.info('Product already exist. Update info...')
+            Mongo.users.updateOne(
+                {"article": article},
+                {
+                  $set: {
+                      "name": nameProduct,
+                      "lastProduct": price
+                    }
+                }
+            )
+            return await getProductDB()
+        }
     }
 
     static async getStringProductTelegram(product: any): Promise<string> {
