@@ -40,6 +40,7 @@ export class Mongo {
       // Ensures that the client will close when error
       logger.error(error)
       await Mongo.client.close();
+      process.exit(1)
     }
   }
 
