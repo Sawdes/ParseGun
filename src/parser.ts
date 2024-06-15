@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer';
 import { Page } from 'puppeteer'
 import fs from 'fs';
 import { logger } from './logger';
-import config from './../.temp/config.json'
+import config from '../.temp/config.json'
 import { Browser } from 'puppeteer';
 
 export class Parser {
@@ -76,7 +76,7 @@ export class Parser {
 
         // Parse name
         logger.info('Parse name...')
-        let nameProductElement = await page.waitForSelector('#layoutPage > div.b2 > div.container.b6 > div.ln3_27.l8n_27 > div.ln3_27.l9n_27.ln8_27 > div.d8 > div > div > div.nm3_27 > h1')
+        let nameProductElement = await page.waitForSelector('div[data-widget="webProductHeading"] > h1')
         let nameProduct = await page.evaluate((el) => String(el?.textContent?.trim()), nameProductElement)
 
 

@@ -1,7 +1,7 @@
-import { TelegramBot } from './telegram'
+import { TelegramBot } from './TelegramBot'
 import { logger } from './logger';
-import { Mongo } from './db';
-import { Parser } from './parser';
+import { Mongo } from './Mongo';
+import { Parser } from './Parser';
 
 export class ParseGun {
     static async init() {
@@ -16,5 +16,4 @@ export class ParseGun {
     }
 }
 
-const initMainProcess = () => ParseGun.init()
-initMainProcess()
+ParseGun.init()
