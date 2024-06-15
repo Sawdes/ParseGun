@@ -107,7 +107,7 @@ export class TelegramBot {
       } 
     } catch (error) {
       TelegramBot.client.sendMessage(req.user.TelegramId, {
-        message:'❌Произошла ошибка в процессе обработки запроса. Просьба обратиться главному разработчику: @dan_blise'
+        message:'❌Произошла ошибка в процессе обработки запроса. Просьба обратиться к главному разработчику: @dan_blise'
       })
       await User.setContext(req, null)
       logger.error(error)
@@ -146,7 +146,7 @@ export class TelegramBot {
       case '/pin_ozon_product':
         if (req.user.pinnedOzonProducts.length >= 5) {
           await TelegramBot.client.sendMessage(req.user.TelegramId, {
-            message: '❌Максимальное количество прикреплённых товаров = 5'
+            message: '❌Максимальное количество прикреплённых товаров: 5'
           });
         } else {
           await TelegramBot.client.sendFile(req.user.TelegramId, {
@@ -164,7 +164,7 @@ export class TelegramBot {
         break;
       default:
         await TelegramBot.client.sendMessage(req.user.TelegramId, {
-          message: '❌Неизвестная команда. Пожалуйста, используй кнопку МЕНЮ:'
+          message: '❌Неизвестная команда. Пожалуйста, используй кнопку "МЕНЮ"'
         });
         break;
       }
