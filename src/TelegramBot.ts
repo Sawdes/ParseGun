@@ -121,7 +121,7 @@ export class TelegramBot {
           message: 'Привет👋 Ипользуй команды в окне меню👇'
         })
         await TelegramBot.client.sendFile(req.user.TelegramId, {
-          file: './media/button_image.jpg',
+          file: './media/menu.jpg',
           caption: `/pin_ozon_product для прикрепления товара.`
         })
         break;
@@ -146,12 +146,12 @@ export class TelegramBot {
       case '/pin_ozon_product':
         if (req.user.pinnedOzonProducts.length >= 5) {
           await TelegramBot.client.sendMessage(req.user.TelegramId, {
-            message: '❌Максимальное количество прикреплённых товаров: 5'
+            message: '❌Максимальное количество прикреплённых товаров: 5.'
           });
         } else {
           await TelegramBot.client.sendFile(req.user.TelegramId, {
             file: './media/share.png',
-            caption: '👆Перейдите на https://www.ozon.ru/ и отправьте мне ссылку'
+            caption: '👆Перейдите на https://www.ozon.ru/ и отправьте мне ссылку.'
           })
           await User.setContext(req, "pinOzonProduct")
         }
@@ -164,7 +164,7 @@ export class TelegramBot {
         break;
       default:
         await TelegramBot.client.sendMessage(req.user.TelegramId, {
-          message: '❌Неизвестная команда. Пожалуйста, используй кнопку "МЕНЮ"'
+          message: '❌Неизвестная команда. Пожалуйста, используй кнопку "МЕНЮ".'
         });
         break;
       }
@@ -180,7 +180,7 @@ export class TelegramBot {
           await User.setContext(req, null)
           return
         } else if (!isOzonURL(req.message)) {
-          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌Допустимы ссылки только домена ozon'});
+          await TelegramBot.client.sendMessage(req.user.TelegramId, {message: '❌Допустимы ссылки только домена ozon.'});
           await User.setContext(req, null)
           return
         }

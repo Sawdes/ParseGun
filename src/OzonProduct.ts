@@ -41,8 +41,8 @@ export class OzonProduct {
 
     static async getStringProductTelegram(product: any): Promise<string> {
         return `
-        <b>${product.nameProduct}:</b>
-        
+        📦Товар: <i>"${product.nameProduct}"</i>
+
         article: <code>${product.article}</code>
         URL: <a href="${product.url}">click to follow the link</a>
         last price: <code>${product.lastPrice}RUB</code>
