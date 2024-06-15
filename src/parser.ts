@@ -65,7 +65,7 @@ export class Parser {
         const page = await Parser.getPage()
         logger.info('Go to page...')
         await page.goto(link, {waitUntil: 'networkidle2'})
-        await page.screenshot({path: './screenshot.png'})
+        await page.screenshot({path: './.temp/media/screenshot.png'})
         // Parse article
         logger.info('Parse article...')
         const articleElementSelectors = [
