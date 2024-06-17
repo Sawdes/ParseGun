@@ -2,7 +2,7 @@ import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions";
 import { NewMessage, NewMessageEvent } from "telegram/events";
 import config from "../.temp/config.json"
-import { logger } from "./logger";
+import { logger } from "./Logger";
 import { User } from "./User";
 import { Mongo } from './Mongo';
 import { OzonProduct } from "./OzonProduct";

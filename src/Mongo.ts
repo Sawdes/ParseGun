@@ -1,6 +1,6 @@
 import { Collection, Document, MongoClient, ServerApiVersion } from "mongodb";
 import config from "../.temp/config.json"
-import { logger } from "./logger";
+import { logger } from "./Logger";
 // import { generateRandomInt } from "./helpers";
 
 export class Mongo {

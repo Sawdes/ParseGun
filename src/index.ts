@@ -1,5 +1,5 @@
 import { TelegramBot } from './TelegramBot'
-import { logger } from './logger';
+import { logger } from './Logger';
 import { Mongo } from './Mongo';
 import { Parser } from './Parser';
 import { Manager } from './Manager';

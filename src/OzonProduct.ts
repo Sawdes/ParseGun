@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { Mongo } from "./Mongo";
-import { logger } from "./logger";
+import { logger } from "./Logger";
 import { Parser } from "./Parser";
 
 export class OzonProduct {

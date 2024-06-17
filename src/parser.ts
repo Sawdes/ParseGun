@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import { Page } from 'puppeteer'
 import fs from 'fs';
-import { logger } from './logger';
+import { logger } from './Logger';
 import config from '../.temp/config.json'
 import { Browser } from 'puppeteer';
 

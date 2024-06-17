@@ -1,5 +1,5 @@
 import { Mongo } from "./Mongo";
-import { logger } from "./logger";
+import { logger } from "./Logger";
 import { Parser } from "./Parser";
 import { TelegramBot } from "./TelegramBot";
 import { OzonProduct } from "./OzonProduct";
