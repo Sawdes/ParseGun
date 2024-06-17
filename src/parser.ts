@@ -12,7 +12,11 @@ export class Parser {
         logger.info('Parser init...')
         Parser.browser = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox ']
+            args: ['--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-gpu',
+                '--no-first-run',
+            ]
         });
     }
 
@@ -66,8 +70,8 @@ export class Parser {
         logger.info('Parse ozon product...')
         const page = await Parser.getPage()
         logger.info('Go to page...')
-        await page.goto(link, {waitUntil: 'networkidle2'})
-        await page.screenshot({path: './.temp/media/screenshot.png'})
+        await page.goto(link)
+        // await page.screenshot({path: './.temp/media/screenshot.png'})
         // Parse article
         logger.info('Parse article...')
         const articleElementSelectors = [
