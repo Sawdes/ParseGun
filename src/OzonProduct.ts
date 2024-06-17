@@ -39,7 +39,7 @@ export class OzonProduct {
         }
     }
 
-    static async getStringProductTelegram(product: any): Promise<string> {
+    static getStringProductTelegram(product: any): string {
         return `
         📦Товар: <i>"${product.nameProduct}"</i>
 

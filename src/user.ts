@@ -7,6 +7,7 @@ export class User {
     lastName: string;
     username: string;
     context: string | null;
+    pinnedOzonProducts: never[];
 
     constructor(sender: { id: number; firstName: string; lastName: string; username: string; }) {
         this.TelegramId = Number(sender.id),
@@ -14,6 +15,7 @@ export class User {
         this.lastName = sender.lastName,
         this.username = sender.username,
         this.context = null
+        this.pinnedOzonProducts = []
     }
 
     static async getUserDB (sender: {id: number}) {
@@ -52,5 +54,5 @@ export class User {
             },
           }
         );
-      }
+    }
 }  

@@ -29,6 +29,7 @@ export class TelegramBot {
   static client: TelegramClient;
 
   static async init() {
+    logger.info('Telegram init...')
     TelegramBot.resetUsersContext()
     logger.info('Connecting to Telegram client...')
     TelegramBot.client = new TelegramClient(
@@ -131,7 +132,7 @@ export class TelegramBot {
         })
         break;
       case '/show_pinned_products':
-        if(req.user.pinnedOzonProducts.length == 0) {
+        if(req.user.pinnedOzonProducts.length == 0 || undefined) {
           await TelegramBot.client.sendMessage(req.user.TelegramId, {
             message: '❌Ни один товар не был прикреплён.'
           })

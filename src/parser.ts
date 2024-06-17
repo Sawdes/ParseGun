@@ -9,8 +9,10 @@ export class Parser {
     static browser: Browser;
 
     static async init() {
+        logger.info('Parser init...')
         Parser.browser = await puppeteer.launch({
             headless: true,
+            args: ['--no-sandbox ']
         });
     }
 

@@ -10,6 +10,7 @@ export class Mongo {
   static wildProducts: Collection<Document>
   
   static async init() {
+    logger.info('Database init...')
     try {
       Mongo.client = new MongoClient(config.mongo.uri, {
         serverApi: {
