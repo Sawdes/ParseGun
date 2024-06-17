@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { Mongo } from "./Mongo";
 import { logger } from "./logger";
 import { Parser } from "./Parser";
@@ -11,22 +10,18 @@ export class Manager {
         logger.info("Init Manager...")
 
         logger.info("Set Interval...")
-        setInterval(Manager.getParseTask, 7200000)
+        setInterval(Manager.parsePinnedProducts, 7200000)
 
         // await Manager.getParseTask()
     }
 
-    static async getParseTask() {
+    static async parsePinnedProducts() {
         const users = Mongo.users.find({})
 
         for await (let user of users) {
             logger.info(`parsetask user: ${JSON.stringify(user, null, 2)}`)
-            await TelegramBot.client.sendMessage(user.TelegramId, {
-                message: '----Начало раассылки закрепленных товаров!----'
-            });
             for (let productId of user.pinnedOzonProducts) {
-                let product = await Mongo.ozonProducts.findOne({_id: productId})
-                logger.info(`parsetask product: ${JSON.stringify(product, null, 2)}`)
+                const product = await Mongo.ozonProducts.findOne({_id: productId})
                 const link = product?.url
 
                 if (link == null || product == null) {
@@ -34,16 +29,21 @@ export class Manager {
                 }
 
                 await Parser.parseOzonProduct(link)
-                product = await Mongo.ozonProducts.findOne({_id: productId})
-
+                const parsedProduct = await Mongo.ozonProducts.findOne({_id: productId})
+                if (parsedProduct == null) {
+                    throw new Error('parsed product is null')
+                }
                 
-                await TelegramBot.client.sendMessage(user.TelegramId, {
-                    message: OzonProduct.getStringProductTelegram(product)
-                });
+                if (product.lastPrice !== parsedProduct.lastPrice) {
+                    await TelegramBot.client.sendMessage(user.TelegramId, {
+                        message: `✅Изменилась цена!                    
+${OzonProduct.getStringProductTelegram(parsedProduct)}
+
+Прошедшая: ${product.lastPrice}
+Актуальная: ${parsedProduct.lastPrice}`
+                    });
+                }
             }
-            await TelegramBot.client.sendMessage(user.TelegramId, {
-                message: '----Конец раассылки закрепленных товаров!----'
-            });
         }
     }
 
