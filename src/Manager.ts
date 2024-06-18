@@ -10,9 +10,12 @@ export class Manager {
         logger.info("Init Manager...")
 
         logger.info("Set Interval...")
-        setInterval(Manager.parsePinnedProducts, 7200000)
+        let interval = (hours: number) => {
+            return hours * 60 * 60 * 1000;
+        }
+        setInterval(Manager.parsePinnedProducts, interval(12))
 
-        // await Manager.getParseTask()
+        await Manager.parsePinnedProducts()
     }
 
     static async parsePinnedProducts() {
@@ -20,6 +23,12 @@ export class Manager {
 
         for await (let user of users) {
             logger.info(`parsetask user: ${JSON.stringify(user, null, 2)}`)
+            await TelegramBot.client.sendMessage(user.TelegramId, {
+                message: `<b>---- Парсинг закрепленных товаров... ----</b>`
+            })
+            await TelegramBot.client.sendMessage(user.TelegramId, {
+                message: `⏳`
+            })
             for (let productId of user.pinnedOzonProducts) {
                 const product = await Mongo.ozonProducts.findOne({_id: productId})
                 const link = product?.url
@@ -36,16 +45,25 @@ export class Manager {
                 
                 if (product.lastPrice !== parsedProduct.lastPrice) {
                     await TelegramBot.client.sendMessage(user.TelegramId, {
-                        message: `✅Изменилась цена!                    
+                        message: `💰Изменилась цена!                    
 ${OzonProduct.getStringProductTelegram(parsedProduct)}
 
 Прошедшая: ${product.lastPrice}
-Актуальная: ${parsedProduct.lastPrice}`
+Актуальная: ${parsedProduct.lastPrice}
+Разница: ${parsedProduct.lastPrice - product.lastPrice}`
                     });
+                } else {
+                    await TelegramBot.client.sendMessage(user.TelegramId, {
+                        message: `💰Цена не изменилась.                   
+${OzonProduct.getStringProductTelegram(parsedProduct)}
+Прошедшая: ${product.lastPrice}RUB
+Актуальная: ${parsedProduct.lastPrice}RUB`
+                    })
                 }
             }
+            await TelegramBot.client.sendMessage(user.TelegramId, {
+                message: `<b>---- Завершенно. ----</b>`
+            })
         }
     }
-
-
 }
