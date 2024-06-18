@@ -14,6 +14,11 @@ export const logger = winston.createLogger({
     transports: [
         new winston.transports.Console(),
         // new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        new winston.transports.File({ filename: `./logs/${Date.now().toString()}.log`})
+        new winston.transports.File({ filename: `./logs/${new Date().toLocaleString("ru", {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            timeZone: 'UTC'
+        })}.log`})
     ],
 })
